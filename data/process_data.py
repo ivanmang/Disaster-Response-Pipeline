@@ -29,7 +29,7 @@ def clean_data(df):
     for column in categories:
         # set each value to be the last character of the string
         # convert column from string to numeric
-        categories[column] = categories[column].apply(lambda x: int(x[-1:]))
+        categories[column] = categories[column].apply(lambda x: 0 if int(x[-1:]) == 0 else 1 )
     # drop the original categories column from `df`
     df.drop("categories", axis=1, inplace=True)
     # concatenate the original dataframe with the new `categories` dataframe
@@ -47,7 +47,7 @@ def save_data(df, database_filename):
 
     """
     engine = create_engine('sqlite:///{}'.format(database_filename))
-    df.to_sql('messages', engine, index=False)
+    df.to_sql('messages', engine, if_exists='replace', index=False)
 
 
 def main():

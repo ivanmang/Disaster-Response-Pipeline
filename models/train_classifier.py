@@ -11,7 +11,7 @@ import re
 import numpy as np
 import pandas as pd
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.metrics import classification_report
 import pickle
@@ -67,7 +67,7 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(AdaBoostClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
     return pipeline
 
@@ -108,14 +108,21 @@ def main():
         print('Building model...')
         model = build_model()
         
+        parameters_ada = {
+            'tfidf__use_idf': (True, False),
+            'clf__estimator__n_estimators': [10, 20, 30, 40]
+        }
+        
+        cv_ada = GridSearchCV(model, param_grid = parameters_ada)
+        
         print('Training model...')
-        model.fit(X_train, Y_train)
+        cv_ada.fit(X_train, Y_train)
         
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        save_model(cv_ada, model_filepath)
 
         print('Trained model saved!')
 
